@@ -15,4 +15,8 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="title_activity_fbauth">ActivityFBAuth</string>
+
+    <!-- Strings related to main map activity -->
+    <string name="sign_out_button">Sign Out</string>
 </resources>
