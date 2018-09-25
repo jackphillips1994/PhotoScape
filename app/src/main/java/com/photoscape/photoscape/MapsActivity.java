@@ -4,9 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.nfc.Tag;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -20,7 +18,6 @@ import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -31,12 +28,9 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
 import com.google.android.gms.location.FusedLocationProviderClient;
-
 import java.util.Arrays;
 import java.util.List;
-
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -61,10 +55,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
 
         // Check if a user is already logged in
-        //authCheck = FirebaseAuth.getInstance();
         authCheck = FirebaseAuth.getInstance();
         FirebaseUser currentUser = authCheck.getCurrentUser();
-        if (authCheck.getCurrentUser() == null) {
+        if (currentUser == null) {
             authenticateUser();
         }
 
@@ -119,6 +112,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         else{
             Log.d("LOCATION_STATUS", "Was unable to get permissions to get current location");
         }
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                // Call marker creation method
+                setMapMarker(latLng);
+            }
+        });
     }
 
     // Authenticate the user by calling the Firebase intent
@@ -215,4 +216,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Moving the camera to the provided location
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
     }
+
+    // Method to handle map marker creation
+    private void setMapMarker(LatLng latLng){
+        // Creating the marker
+        MarkerOptions markerOptions = new MarkerOptions();
+
+        // Setting the marker position
+        markerOptions.position(latLng);
+
+        // Setting the title for the marker
+        markerOptions.title("New Marker");
+
+        // Clears the markers
+        //mMap.clear();
+
+        // Moves the camera to the new position
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM));
+
+        // Add Marker to the Map
+        mMap.addMarker(markerOptions);
+    }
 }
+
