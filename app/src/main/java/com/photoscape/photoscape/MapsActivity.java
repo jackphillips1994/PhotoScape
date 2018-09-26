@@ -53,10 +53,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Button newMarkerButton;
     public static Boolean isFragmentDisplayed = false;
 
-    // Import button
-    private Button newImportButton;
-    private int PICK_IMAGE_REQUEST = 1;
-
     // Setting up Firebase login providers
     List<AuthUI.IdpConfig> providers = Arrays.asList(
             new AuthUI.IdpConfig.EmailBuilder().build(),
@@ -102,14 +98,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        // Setting up the import button
-        newImportButton = findViewById(R.id.importButton);
-        newImportButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                choosePhotoFromGallery();
-            }
-        });
     }
 
 
@@ -144,8 +132,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                // Call marker creation method
-                setMapMarker(latLng);
+                // Check to see if fragment is open and if so close it
+                if(isFragmentDisplayed){
+                    closeCreatePinFragment();
+                }else {
+                    // Call marker creation method
+                    setMapMarker(latLng);
+                }
             }
         });
     }
@@ -250,7 +243,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         displayCreatePinFragment();
         isFragmentDisplayed = true;
-        this.onPause();
 
         // Creating the marker
         MarkerOptions markerOptions = new MarkerOptions();
@@ -299,16 +291,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             fragmentTransaction.remove(createPin).commit();
         }
         isFragmentDisplayed = false;
-    }
-
-    // Method to handle gallery dialog
-    public void choosePhotoFromGallery() {
-        Intent intent = new Intent();
-        // Show only images, no videos or anything else
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        // Always show the chooser (if there are multiple options available)
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
     }
 }
 
