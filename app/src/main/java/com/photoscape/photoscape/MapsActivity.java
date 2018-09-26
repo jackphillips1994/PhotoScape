@@ -8,6 +8,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
@@ -44,6 +46,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final float DEFAULT_ZOOM = 15f;
     private Boolean mLocationPermissionsGranted = false;
 
+    // Variables to handle the fragements
+    // New Pin Fragement
+    private Button newMarkerButton;
+    public static Boolean isFragmentDisplayed = false;
+
     // Setting up Firebase login providers
     List<AuthUI.IdpConfig> providers = Arrays.asList(
             new AuthUI.IdpConfig.EmailBuilder().build(),
@@ -77,6 +84,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Setting up the mylocation
         getLocationPermission();
+
+        // Setting up newMarkerButton
+        newMarkerButton = findViewById(R.id.NewMarkerbutton);
+
+        // Setting the click listener for the new marker button
+        newMarkerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                displayCreatePinFragment();
+            }
+        });
     }
 
 
@@ -92,11 +110,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
         if (mLocationPermissionsGranted) {
             Log.d("LOCATION_STATUS", "App has correct permissions to access devices current location");
@@ -219,6 +232,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     // Method to handle map marker creation
     private void setMapMarker(LatLng latLng){
+
+        displayCreatePinFragment();
+        isFragmentDisplayed = true;
+        this.onPause();
+
         // Creating the marker
         MarkerOptions markerOptions = new MarkerOptions();
 
@@ -236,6 +254,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Add Marker to the Map
         mMap.addMarker(markerOptions);
+    }
+
+    public void onPause() {
+        super.onPause();
+    }
+
+    // Method to handle instantiating fragment
+    public void displayCreatePinFragment() {
+        CreatePin createPin = new CreatePin();
+        // Get the FragementManager and start a transaction
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        // Add the SimpleFragment
+        fragmentTransaction.add(R.id.fragment_container,
+                createPin).addToBackStack(null).commit();
+        isFragmentDisplayed = true;
+    }
+
+    // Method to handle closing the fragment
+    public void closeCreatePinFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        // Check to see if the fragment is already showing
+        CreatePin createPin = (CreatePin) fragmentManager
+                .findFragmentById(R.id.fragment_container);
+        if(createPin != null) {
+            // Commit and close the transaction to close the fragment
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.remove(createPin).commit();
+        }
+        isFragmentDisplayed = false;
     }
 }
 
