@@ -18,6 +18,10 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
+    <!-- To allow access to the gallery-->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <permission
         android:name="in.wptrafficanalyzer.locationattouchedpositionv2.permission.MAPS_RECEIVE"
         android:protectionLevel="signature" />

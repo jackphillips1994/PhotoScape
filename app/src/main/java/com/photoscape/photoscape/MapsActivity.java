@@ -1,6 +1,7 @@
 package com.photoscape.photoscape;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -50,6 +52,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // New Pin Fragement
     private Button newMarkerButton;
     public static Boolean isFragmentDisplayed = false;
+
+    // Import button
+    private Button newImportButton;
+    private int PICK_IMAGE_REQUEST = 1;
 
     // Setting up Firebase login providers
     List<AuthUI.IdpConfig> providers = Arrays.asList(
@@ -93,6 +99,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onClick(View view) {
                 displayCreatePinFragment();
+            }
+        });
+
+        // Setting up the import button
+        newImportButton = findViewById(R.id.importButton);
+        newImportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                choosePhotoFromGallery();
             }
         });
     }
@@ -284,6 +299,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             fragmentTransaction.remove(createPin).commit();
         }
         isFragmentDisplayed = false;
+    }
+
+    // Method to handle gallery dialog
+    public void choosePhotoFromGallery() {
+        Intent intent = new Intent();
+        // Show only images, no videos or anything else
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        // Always show the chooser (if there are multiple options available)
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
     }
 }
 
