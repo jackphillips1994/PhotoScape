@@ -33,13 +33,22 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.android.gms.location.FusedLocationProviderClient;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -56,6 +65,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     // Variables to handle the fragements
     public static Boolean isFragmentDisplayed = false;
+
+    // Setup Firebase DB
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference dbRef = database.getReference("PhotoScape");
 
     // Setting up Firebase login providers
     List<AuthUI.IdpConfig> providers = Arrays.asList(
@@ -247,6 +260,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // Method to handle map marker creation
     private void setMapMarker(LatLng latLng){
 
+        // Get pin timestamp
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("AEST"));
+        Date date = new Date();
+        String pinCreationTime = dateFormat.format(date).toString();
+
         displayCreatePinFragment();
         isFragmentDisplayed = true;
 
@@ -267,6 +286,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Add Marker to the Map
         mMap.addMarker(markerOptions);
+        saveToFirebase(latLng,pinCreationTime);
     }
 
     public void onPause() {
@@ -297,6 +317,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             fragmentTransaction.remove(createPin).commit();
         }
         isFragmentDisplayed = false;
+    }
+
+    // Method to handle saving to the DB
+    private void saveToFirebase(LatLng mCurrentLocation, String pinCreationTime) {
+        Map mLocations = new HashMap();
+        mLocations.put("CreationTime", pinCreationTime);
+        Map mCoordinate = new HashMap();
+        mCoordinate.put("latitude", mCurrentLocation.latitude);
+        mCoordinate.put("longitude", mCurrentLocation.longitude);
+        mLocations.put("location", mCoordinate);
+        dbRef.push().setValue(mLocations);
     }
 }
 
