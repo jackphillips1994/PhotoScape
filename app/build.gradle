@@ -35,6 +35,9 @@ dependencies {
 
     // Firebase AuthUI
     implementation 'com.firebaseui:firebase-ui-auth:3.2.2'
+
+    // Locations
+    implementation 'com.google.android.gms:play-services-places:15.0.1'
 }
 
 allprojects {

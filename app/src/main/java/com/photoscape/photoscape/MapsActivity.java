@@ -36,6 +36,11 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -47,10 +52,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
     private static final float DEFAULT_ZOOM = 15f;
     private Boolean mLocationPermissionsGranted = false;
+    PlaceAutocompleteFragment placeAutoComplete;
 
     // Variables to handle the fragements
-    // New Pin Fragement
-    private Button newMarkerButton;
     public static Boolean isFragmentDisplayed = false;
 
     // Setting up Firebase login providers
@@ -87,17 +91,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Setting up the mylocation
         getLocationPermission();
 
-        // Setting up newMarkerButton
-        newMarkerButton = findViewById(R.id.NewMarkerbutton);
 
-        // Setting the click listener for the new marker button
-        newMarkerButton.setOnClickListener(new View.OnClickListener() {
+        placeAutoComplete = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.place_autocomplete);
+        placeAutoComplete.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
-            public void onClick(View view) {
-                displayCreatePinFragment();
+            public void onPlaceSelected(Place place) {
+                Log.d("Maps", "Place selected: " + place.getName());
+            }
+
+            @Override
+            public void onError(Status status) {
+                Log.d("Maps", "An error occurred: " + status);
             }
         });
-
     }
 
 
