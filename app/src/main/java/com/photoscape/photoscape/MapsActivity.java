@@ -264,10 +264,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("AEST"));
         Date date = new Date();
-        String pinCreationTime = dateFormat.format(date).toString();
+        String pinCreationTime = dateFormat.format(date);
 
         displayCreatePinFragment();
         isFragmentDisplayed = true;
+
+        // Return value from fragment, if save pin then save pin if not discard pin
 
         // Creating the marker
         MarkerOptions markerOptions = new MarkerOptions();
@@ -329,5 +331,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mLocations.put("location", mCoordinate);
         dbRef.push().setValue(mLocations);
     }
+
 }
 
