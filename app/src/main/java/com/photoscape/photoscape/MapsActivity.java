@@ -1,10 +1,13 @@
 package com.photoscape.photoscape;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -62,13 +65,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final float DEFAULT_ZOOM = 15f;
     private Boolean mLocationPermissionsGranted = false;
     PlaceAutocompleteFragment placeAutoComplete;
+    public LocationManager locationManager;
+    public Criteria criteria;
+    public String bestProvider;
 
     // Variables to handle the fragements
     public static Boolean isFragmentDisplayed = false;
-
-    // Setup Firebase DB
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference dbRef = database.getReference("PhotoScape");
 
     // Setting up Firebase login providers
     List<AuthUI.IdpConfig> providers = Arrays.asList(
@@ -136,6 +138,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (mLocationPermissionsGranted) {
             Log.d("LOCATION_STATUS", "App has correct permissions to access devices current location");
             getDeviceLocation();
+            //getDeviceLocationWithManager();
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
@@ -204,6 +207,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onComplete(@NonNull Task<Void> task) {}});
     }
 
+   /* private void getDeviceLocationWithManager() {
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        criteria = new Criteria();
+        bestProvider = String.valueOf(locationManager.getBestProvider(criteria, true));
+        Location location = locationManager.getLastKnownLocation(bestProvider);
+        if(location != null){
+            Log.d("LOCATION_STATUS", "Current location: lat:" + location.getLatitude() + "long:" + location.getLatitude());
+        }else {
+            // Request location update
+            locationManager.requestLocationUpdates(bestProvider, 1000, 0, );
+        }
+    }
+*/
+
     private void getDeviceLocation() {
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         try{
@@ -260,13 +277,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // Method to handle map marker creation
     private void setMapMarker(LatLng latLng){
 
+
         // Get pin timestamp
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("AEST"));
         Date date = new Date();
         String pinCreationTime = dateFormat.format(date);
 
-        displayCreatePinFragment();
+        displayCreatePinFragment(latLng);
         isFragmentDisplayed = true;
 
         // Return value from fragment, if save pin then save pin if not discard pin
@@ -288,19 +306,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Add Marker to the Map
         mMap.addMarker(markerOptions);
-        saveToFirebase(latLng,pinCreationTime);
-    }
-
-    public void onPause() {
-        super.onPause();
+        //saveToFirebase(latLng,pinCreationTime);
     }
 
     // Method to handle instantiating fragment
-    public void displayCreatePinFragment() {
+    public void displayCreatePinFragment(LatLng latLng) {
+        //Package latlong data to be sent to fragment
+        Bundle bundle=new Bundle();
+        bundle.putDouble("LATITUDE",latLng.latitude);
+        bundle.putDouble("LONGITUDE",latLng.longitude);
+
+        // Create fragment and pass data through
         CreatePin createPin = new CreatePin();
+        createPin.setArguments(bundle);
+
         // Get the FragementManager and start a transaction
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
         // Add the SimpleFragment
         fragmentTransaction.add(R.id.fragment_container,
                 createPin).addToBackStack(null).commit();
@@ -319,17 +342,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             fragmentTransaction.remove(createPin).commit();
         }
         isFragmentDisplayed = false;
-    }
-
-    // Method to handle saving to the DB
-    private void saveToFirebase(LatLng mCurrentLocation, String pinCreationTime) {
-        Map mLocations = new HashMap();
-        mLocations.put("CreationTime", pinCreationTime);
-        Map mCoordinate = new HashMap();
-        mCoordinate.put("latitude", mCurrentLocation.latitude);
-        mCoordinate.put("longitude", mCurrentLocation.longitude);
-        mLocations.put("location", mCoordinate);
-        dbRef.push().setValue(mLocations);
     }
 
 }
