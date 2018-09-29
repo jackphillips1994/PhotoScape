@@ -179,7 +179,6 @@ public class CreatePin extends Fragment {
             savePhotoToCloud(imageUri);
             LatLng latLng = new LatLng(latitude, longitude);
             String markerName = "New Marker Title";
-
         }
     }
 
