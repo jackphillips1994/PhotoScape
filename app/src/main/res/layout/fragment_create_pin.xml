@@ -14,17 +14,17 @@
     <ScrollView
         android:layout_width="340dp"
         android:layout_height="508dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:backgroundTint="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0">
+        app:layout_constraintVertical_bias="0.0">
 
         <android.support.constraint.ConstraintLayout
             android:id="@+id/linearLayout2"
@@ -36,44 +36,49 @@
                 android:id="@+id/photoPreview"
                 android:layout_width="280dp"
                 android:layout_height="156dp"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="photoPreview"
                 android:src="@android:color/holo_orange_light"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.272"
+                app:layout_constraintHorizontal_bias="0.333"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView6" />
+                app:layout_constraintTop_toBottomOf="@+id/photoTextView" />
 
             <EditText
-                android:id="@+id/editText"
+                android:id="@+id/editPinName"
                 android:layout_width="276dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="8dp"
                 android:ems="10"
                 android:inputType="textPersonName"
-                android:text="Name"
+                android:text="@string/create_pin_name"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.333"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/textView6"
+                android:id="@+id/photoTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
+                android:layout_marginStart="24dp"
                 android:layout_marginTop="4dp"
                 android:text="Photo:"
+                app:layout_constraintBottom_toTopOf="@+id/editPinName"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/editText" />
+                app:layout_constraintTop_toBottomOf="@+id/editPinName"
+                app:layout_constraintVertical_bias="0.0" />
 
             <TextView
-                android:id="@+id/textView7"
+                android:id="@+id/uploadTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="184dp"
                 android:layout_marginTop="4dp"
+                android:layout_marginEnd="184dp"
                 android:text="Upload:"
                 app:layout_constraintEnd_toStartOf="@+id/importPhotoButton"
                 app:layout_constraintTop_toBottomOf="@+id/photoPreview" />
@@ -82,81 +87,82 @@
                 android:id="@+id/importPhotoButton"
                 android:layout_width="40dp"
                 android:layout_height="29dp"
-                android:layout_marginEnd="24dp"
                 android:layout_marginTop="4dp"
+                android:layout_marginEnd="24dp"
                 android:src="@android:drawable/ic_menu_upload"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/photoPreview" />
 
             <TextView
-                android:id="@+id/textView8"
+                android:id="@+id/descriptionTextView"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
+                android:layout_height="17dp"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
                 android:text="Description:"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.028"
+                app:layout_constraintHorizontal_bias="0.08"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView7" />
+                app:layout_constraintTop_toBottomOf="@+id/uploadTextView" />
 
             <EditText
-                android:id="@+id/editText2"
+                android:id="@+id/editPinDescription"
                 android:layout_width="274dp"
                 android:layout_height="109dp"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
                 android:ems="10"
                 android:inputType="textMultiLine"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.4"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView8" />
+                app:layout_constraintTop_toBottomOf="@+id/descriptionTextView" />
 
             <TextView
-                android:id="@+id/textView9"
+                android:id="@+id/bestPhotoTimeTextView"
                 android:layout_width="139dp"
                 android:layout_height="23dp"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="8dp"
                 android:text="Best Time for Photo:"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/editText2" />
+                app:layout_constraintTop_toBottomOf="@+id/editPinDescription" />
 
             <Spinner
-                android:id="@+id/spinner"
+                android:id="@+id/bestPhotoTimeSpinner"
                 android:layout_width="94dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.52"
-                app:layout_constraintStart_toEndOf="@+id/textView9"
-                app:layout_constraintTop_toBottomOf="@+id/editText2" />
+                app:layout_constraintStart_toEndOf="@+id/bestPhotoTimeTextView"
+                app:layout_constraintTop_toBottomOf="@+id/editPinDescription" />
 
             <TextView
-                android:id="@+id/textView11"
+                android:id="@+id/instructionTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="12dp"
                 android:text="Instructions:"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView9" />
+                app:layout_constraintTop_toBottomOf="@+id/bestPhotoTimeTextView" />
 
             <EditText
-                android:id="@+id/editText4"
+                android:id="@+id/editPinInstructions"
                 android:layout_width="271dp"
                 android:layout_height="136dp"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
                 android:ems="10"
                 android:inputType="textMultiLine"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView11" />
+                app:layout_constraintTop_toBottomOf="@+id/instructionTextView" />
 
             <Button
                 android:id="@+id/saveButton"
@@ -165,18 +171,18 @@
                 android:layout_marginEnd="8dp"
                 android:text="Save"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/editText4" />
+                app:layout_constraintTop_toBottomOf="@+id/editPinInstructions" />
 
             <Button
                 android:id="@+id/discardButton"
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
-                android:layout_marginEnd="100dp"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="100dp"
                 android:text="Discard"
                 app:layout_constraintEnd_toStartOf="@+id/saveButton"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/editText4"
+                app:layout_constraintTop_toBottomOf="@+id/editPinInstructions"
                 tools:text="Discard" />
         </android.support.constraint.ConstraintLayout>
     </ScrollView>

@@ -15,7 +15,6 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -36,22 +35,12 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.android.gms.location.FusedLocationProviderClient;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -159,7 +148,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     closeCreatePinFragment();
                 }else {
                     // Call marker creation method
-                    setMapMarker(latLng);
+                    displayCreatePinFragment(latLng);
+                    //setMapMarker(latLng, "New Marker Title");
                 }
             }
         });
@@ -275,46 +265,41 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     // Method to handle map marker creation
-    private void setMapMarker(LatLng latLng){
-
-
-        // Get pin timestamp
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("AEST"));
-        Date date = new Date();
-        String pinCreationTime = dateFormat.format(date);
-
-        displayCreatePinFragment(latLng);
-        isFragmentDisplayed = true;
-
+    public void setMapMarker(LatLng latLng, String markerTitle){
         // Return value from fragment, if save pin then save pin if not discard pin
 
-        // Creating the marker
+        // Creating the marker and setting the marker
         MarkerOptions markerOptions = new MarkerOptions();
-
-        // Setting the marker position
         markerOptions.position(latLng);
+        mMap.addMarker(markerOptions);
 
         // Setting the title for the marker
-        markerOptions.title("New Marker");
+        markerOptions.title(markerTitle);
 
         // Clears the markers
         //mMap.clear();
 
         // Moves the camera to the new position
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM));
-
-        // Add Marker to the Map
-        mMap.addMarker(markerOptions);
-        //saveToFirebase(latLng,pinCreationTime);
     }
 
     // Method to handle instantiating fragment
     public void displayCreatePinFragment(LatLng latLng) {
         //Package latlong data to be sent to fragment
-        Bundle bundle=new Bundle();
+        Bundle bundle = new Bundle();
         bundle.putDouble("LATITUDE",latLng.latitude);
         bundle.putDouble("LONGITUDE",latLng.longitude);
+
+        // Get username to pass to the pin
+        authCheck = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = authCheck.getCurrentUser();
+        String username;
+        if (currentUser == null) {
+            username = "Username_Unavailable";
+        } else {
+            username = currentUser.getEmail();
+        }
+        bundle.putString("USERNAME",username);
 
         // Create fragment and pass data through
         CreatePin createPin = new CreatePin();

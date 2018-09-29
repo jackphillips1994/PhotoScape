@@ -18,6 +18,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
+
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -30,8 +32,12 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.net.URI;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 
 /**
@@ -47,6 +53,14 @@ public class CreatePin extends Fragment {
     private int PICK_IMAGE_REQUEST = 1;
     private StorageReference mStorageRef;
     private int REQUEST_EXTERNAL_STORAGE = 1;
+
+    // Setup location details
+    Double latitude;
+    Double longitude;
+    String username;
+
+    // Setup image details
+    Uri imageUri;
 
     // Setup Firebase DB
     FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -71,9 +85,11 @@ public class CreatePin extends Fragment {
         setupButtons(RootView);
 
         //UNPACK OUR DATA FROM OUR BUNDLE
-        Double latitude = this.getArguments().getDouble("LATITUDE");
-        Double longitude = this.getArguments().getDouble("LONGITUDE");
-        Log.d("TRANSFER_STATUS", "LATITUDE: " + latitude + " " + "LONGITUDE: " + longitude);
+        latitude = this.getArguments().getDouble("LATITUDE");
+        longitude = this.getArguments().getDouble("LONGITUDE");
+        username = this.getArguments().getString("USERNAME");
+        Log.d("TRANSFER_STATUS", "LATITUDE: " + latitude + " " + "LONGITUDE: " + longitude +
+        "USERNAME: " + username);
 
         // Init the firebase storage
         mStorageRef = FirebaseStorage.getInstance().getReference("PhotoScapePhotos");
@@ -96,6 +112,7 @@ public class CreatePin extends Fragment {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                savePinDetails();
                 closeCurrentFragment();
             }
         });
@@ -136,27 +153,58 @@ public class CreatePin extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST) {
-            Uri uri = data.getData();
-            ImageView imageView = (ImageView) this.getView().findViewById(R.id.photoPreview);
-            imageView.setImageURI(uri);
-            savePhotoToCloud(uri);
+            this.imageUri = data.getData();
+            ImageView imageView = this.getView().findViewById(R.id.photoPreview);
+            imageView.setImageURI(imageUri);
+            savePhotoToCloud(imageUri);
+        }
+    }
+
+    // Method to handle the creation of pin marker
+    private void savePinDetails() {
+        // Check to see if there is a value for Long, lat and a photo has been selected
+        if(latitude == null || longitude == null){
+            Toast.makeText(getActivity(),"Unable to get pin location details", Toast.LENGTH_SHORT).show();
+        }
+        else{
+            Log.d("LOCATION_SAVING", "Pin long and lat have been saved");
+            saveToFirebase(latitude, longitude, username);
+        }
+
+        // Get uri from image view
+        ImageView imageView = this.getView().findViewById(R.id.photoPreview);
+        if(imageView == null){
+            Toast.makeText(getActivity(),"No photo has been selected", Toast.LENGTH_SHORT).show();
+        } else{
+            savePhotoToCloud(imageUri);
+            LatLng latLng = new LatLng(latitude, longitude);
+            String markerName = "New Marker Title";
+
         }
     }
 
     // Method to handle saving to the DB
-    private void saveToFirebase(LatLng mCurrentLocation, String pinCreationTime) {
+    private void saveToFirebase(Double latitude, Double longitude, String username) {
+        // Get pin timestamp
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("AEST"));
+        Date date = new Date();
+        String pinCreationTime = dateFormat.format(date);
+
+        // Setup hashmap to be saved
         Map mLocations = new HashMap();
         mLocations.put("CreationTime", pinCreationTime);
+        mLocations.put("Username", username);
         Map mCoordinate = new HashMap();
-        mCoordinate.put("latitude", mCurrentLocation.latitude);
-        mCoordinate.put("longitude", mCurrentLocation.longitude);
+        mCoordinate.put("latitude", latitude);
+        mCoordinate.put("longitude", longitude);
         mLocations.put("location", mCoordinate);
         dbRef.push().setValue(mLocations);
     }
 
     // Method to save photo to cloud storage
     private void savePhotoToCloud(Uri uri) {
-        StorageReference storageRef = mStorageRef.child("test.jpg");
+        StorageReference storageRef = mStorageRef.child("PhotoScapePhotos/photo" + username + "jpg");
         if (ActivityCompat.checkSelfPermission(getContext(),
                 android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
