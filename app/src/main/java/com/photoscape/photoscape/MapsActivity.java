@@ -9,6 +9,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -83,15 +85,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        // Handling the sign out button
-        Button signOutButton = (Button) findViewById(R.id.signOutButton1);
-        signOutButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                // Sign user out
-                signOut();
-            }
-        });
-
         // Setting up the mylocation
         getLocationPermission();
 
@@ -108,6 +101,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.d("Maps", "An error occurred: " + status);
             }
         });
+
+        BottomNavigationView bottomNavigationView = (BottomNavigationView)
+                findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setOnNavigationItemSelectedListener(
+                new BottomNavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.action_favorites:
+                                Log.d("NAV_BAR", "My Pins clicked");
+                            case R.id.action_schedules:
+                                Log.d("NAV_BAR", "Account clicked");
+                                displayAccountFragment();
+                        }
+                        return true;
+                    }
+                });
     }
 
 
@@ -328,6 +338,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         isFragmentDisplayed = false;
     }
+
+    // Method to display account information fragment
+    public void displayAccountFragment() {
+        Bundle bundle = new Bundle();
+
+        // Get username to pass to the accounts fragment
+        authCheck = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = authCheck.getCurrentUser();
+        String username;
+        if (currentUser == null) {
+            username = "Username_Unavailable";
+        } else {
+            username = currentUser.getEmail();
+        }
+        bundle.putString("EMAIL_ADDRESS",username);
+
+        // Create fragment and pass data through
+        Account account = new Account();
+        account.setArguments(bundle);
+
+        // Get the FragementManager and start a transaction
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        // Add the SimpleFragment
+        fragmentTransaction.add(R.id.account_fragment,account).addToBackStack(null).commit();
+    }
+
+    // Method to close account information fragment
 
 }
 
