@@ -175,7 +175,7 @@ public class CreatePin extends Fragment {
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.remove(createPin).commit();
         }
-        MapsActivity.isFragmentDisplayed = false;
+        MapsActivity.isCreatePinFragmentDisplayed = false;
     }
 
     public void choosePhotoFromGallery() {

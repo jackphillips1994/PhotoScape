@@ -1,8 +1,6 @@
 package com.photoscape.photoscape;
 
 import android.Manifest;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
@@ -18,8 +16,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
@@ -61,7 +57,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public String bestProvider;
 
     // Variables to handle the fragements
-    public static Boolean isFragmentDisplayed = false;
+    public static Boolean isCreatePinFragmentDisplayed = false;
+    public static Boolean isAccountPinFragmentDisplayed = false;
 
     // Setting up Firebase login providers
     List<AuthUI.IdpConfig> providers = Arrays.asList(
@@ -88,32 +85,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Setting up the mylocation
         getLocationPermission();
 
+        // Setup search bar
+        setupPlacesSearch();
 
-        placeAutoComplete = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.place_autocomplete);
-        placeAutoComplete.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(Place place) {
-                Log.d("Maps", "Place selected: " + place.getName());
-            }
-
-            @Override
-            public void onError(Status status) {
-                Log.d("Maps", "An error occurred: " + status);
-            }
-        });
-
-        BottomNavigationView bottomNavigationView = (BottomNavigationView)
-                findViewById(R.id.bottom_navigation);
+        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(
                 new BottomNavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                        switch (item.getItemId()) {
-                            case R.id.action_favorites:
+                        Log.d("NAV_BAR", item.getTitle().toString());
+                        switch (item.getTitle().toString()) {
+                            case "My Pins":
                                 Log.d("NAV_BAR", "My Pins clicked");
-                            case R.id.action_schedules:
+                                Intent intent = new Intent(MapsActivity.this, MyPinsActivity.class);
+                                startActivity(intent);
+                                break;
+                            case "Account":
                                 Log.d("NAV_BAR", "Account clicked");
                                 displayAccountFragment();
+                                break;
                         }
                         return true;
                     }
@@ -154,12 +144,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onMapClick(LatLng latLng) {
                 // Check to see if fragment is open and if so close it
-                if(isFragmentDisplayed){
+                if(isCreatePinFragmentDisplayed){
                     closeCreatePinFragment();
-                }else {
+                }else if (!isAccountPinFragmentDisplayed) {
                     // Call marker creation method
                     displayCreatePinFragment(latLng);
                     //setMapMarker(latLng, "New Marker Title");
+                }
+                else {
+                    closeAccountFragment();
                 }
             }
         });
@@ -322,7 +315,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Add the SimpleFragment
         fragmentTransaction.add(R.id.fragment_container,
                 createPin).addToBackStack(null).commit();
-        isFragmentDisplayed = true;
+        isCreatePinFragmentDisplayed = true;
     }
 
     // Method to handle closing the fragment
@@ -336,7 +329,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.remove(createPin).commit();
         }
-        isFragmentDisplayed = false;
+        isCreatePinFragmentDisplayed = false;
     }
 
     // Method to display account information fragment
@@ -364,9 +357,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Add the SimpleFragment
         fragmentTransaction.add(R.id.account_fragment,account).addToBackStack(null).commit();
+        isAccountPinFragmentDisplayed = true;
     }
 
     // Method to close account information fragment
+    public void closeAccountFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        // Check to see if the fragment is already showing
+        Account account = (Account) fragmentManager
+                .findFragmentById(R.id.account_fragment);
+        if(account != null) {
+            // Commit and close the transaction to close the fragment
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.remove(account).commit();
+            isAccountPinFragmentDisplayed = false;
+        }
+    }
 
+    // Method to setup places search
+    private void setupPlacesSearch() {
+        final LatLng[] nLocation = new LatLng[1];
+        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
+                getFragmentManager().findFragmentById(R.id.place_autocomplete);
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                Log.d("PLACES_SEARCH", "Place: " + place.getName());
+                nLocation[0] = place.getLatLng();
+                moveCamera(nLocation[0], DEFAULT_ZOOM);
+            }
+
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.d("PLACES_SEARCH", "An error occurred: " + status);
+            }
+        });
+    }
 }
 

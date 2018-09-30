@@ -38,4 +38,8 @@
         <item>Night</item>
         <item>Any</item>
     </string-array>
+    <string name="my_pins_activity">MyPins</string>
+    
+    <!-- Strings used for My Pins Activity -->
+    <string name="my_pins">My Pins</string>
 </resources>
