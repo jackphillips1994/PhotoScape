@@ -30,4 +30,12 @@
     <string name="instructions_text_view">Instructions</string>
     <string name="save_pin_button">Save</string>
     <string name="discard_button">Discord</string>
+    <!-- Strings for spinners -->
+    <string-array name="best_Photo_Time">
+        <item>Sunrise</item>
+        <item>Sunset</item>
+        <item>Midday</item>
+        <item>Night</item>
+        <item>Any</item>
+    </string-array>
 </resources>

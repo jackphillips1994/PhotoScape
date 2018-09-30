@@ -68,7 +68,7 @@
             android:id="@+id/textView5"
             android:layout_width="208dp"
             android:layout_height="83dp"
-            android:text="TextView"
+            android:text="Instructions"
             tools:layout_editor_absoluteX="67dp"
             tools:layout_editor_absoluteY="489dp" />
     </android.support.constraint.ConstraintLayout>

@@ -15,9 +15,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -32,6 +36,7 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.net.URI;
+import java.security.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -51,8 +56,13 @@ public class CreatePin extends Fragment {
     private Button saveButton;
     private ImageButton importPhotoButton;
     private int PICK_IMAGE_REQUEST = 1;
-    private StorageReference mStorageRef;
     private int REQUEST_EXTERNAL_STORAGE = 1;
+
+    // Setup inputs
+    private EditText nameInput;
+    private EditText descriptionInput;
+    private EditText instructionsInput;
+    private Spinner spinner;
 
     // Setup location details
     Double latitude;
@@ -63,8 +73,9 @@ public class CreatePin extends Fragment {
     Uri imageUri;
 
     // Setup Firebase DB
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference dbRef = database.getReference("PhotoScape");
+    private FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private DatabaseReference dbRef = database.getReference("PhotoScape");
+    private StorageReference mStorageRef;
 
     public CreatePin() {
         // Required empty public constructor
@@ -84,12 +95,14 @@ public class CreatePin extends Fragment {
         // Setup buttons
         setupButtons(RootView);
 
-        //UNPACK OUR DATA FROM OUR BUNDLE
-        latitude = this.getArguments().getDouble("LATITUDE");
-        longitude = this.getArguments().getDouble("LONGITUDE");
-        username = this.getArguments().getString("USERNAME");
-        Log.d("TRANSFER_STATUS", "LATITUDE: " + latitude + " " + "LONGITUDE: " + longitude +
-        "USERNAME: " + username);
+        // Setup spinner
+        setupSpinner(RootView);
+
+        // Unpack out data from the bundle
+        unpackArguments();
+
+        // Setup text inputs
+        setupTextInputs(RootView);
 
         // Init the firebase storage
         mStorageRef = FirebaseStorage.getInstance().getReference("PhotoScapePhotos");
@@ -97,7 +110,24 @@ public class CreatePin extends Fragment {
         return RootView;
     }
 
-    public void setupButtons(View view){
+    private void setupTextInputs(View view) {
+        nameInput = view.findViewById(R.id.editPinName);
+        descriptionInput = view.findViewById(R.id.editPinDescription);
+        instructionsInput = view.findViewById(R.id.editPinInstructions);
+    }
+
+    private void setupSpinner(View RootView) {
+        spinner = RootView.findViewById(R.id.bestPhotoTimeSpinner);
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),
+                R.array.best_Photo_Time, android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
+    }
+
+    private void setupButtons(View view){
         // Setup discard button
         discardButton = view.findViewById(R.id.discardButton);
         discardButton.setOnClickListener(new View.OnClickListener() {
@@ -125,6 +155,14 @@ public class CreatePin extends Fragment {
                 choosePhotoFromGallery();
             }
         });
+    }
+
+    private void unpackArguments() {
+        latitude = this.getArguments().getDouble("LATITUDE");
+        longitude = this.getArguments().getDouble("LONGITUDE");
+        username = this.getArguments().getString("USERNAME");
+        Log.d("TRANSFER_STATUS", "LATITUDE: " + latitude + " " + "LONGITUDE: " + longitude +
+                "USERNAME: " + username);
     }
 
     private void closeCurrentFragment(){
@@ -156,8 +194,17 @@ public class CreatePin extends Fragment {
             this.imageUri = data.getData();
             ImageView imageView = this.getView().findViewById(R.id.photoPreview);
             imageView.setImageURI(imageUri);
-            savePhotoToCloud(imageUri);
         }
+    }
+
+    // Method to handle gather all the pin details from the inputted data
+    private Map getPinDetails() {
+        Map pinDetails = new HashMap();
+        pinDetails.put("PinName", getPinName());
+        pinDetails.put("PinDescription",getPinDescription());
+        pinDetails.put("PinInstructions",getPinInstructions());
+        pinDetails.put("PinBestPhotoTime",getPinBestPhotoTime());
+        return pinDetails;
     }
 
     // Method to handle the creation of pin marker
@@ -166,44 +213,58 @@ public class CreatePin extends Fragment {
         if(latitude == null || longitude == null){
             Toast.makeText(getActivity(),"Unable to get pin location details", Toast.LENGTH_SHORT).show();
         }
-        else{
-            Log.d("LOCATION_SAVING", "Pin long and lat have been saved");
-            saveToFirebase(latitude, longitude, username);
-        }
+        // Gather all data needed to be saved to the DB, then call the save db method and save storage method
+        Map pinDetails = getPinDetails();
+        pinDetails.put("Username", username);
 
         // Get uri from image view
         ImageView imageView = this.getView().findViewById(R.id.photoPreview);
         if(imageView == null){
             Toast.makeText(getActivity(),"No photo has been selected", Toast.LENGTH_SHORT).show();
         } else{
-            savePhotoToCloud(imageUri);
+            // Call method to generate an id for the marker(EG timestamp that will go across photos and marker details)
+            String markerID = generateID();
+            pinDetails.put("ID",markerID);
+
+            saveToFirebase(pinDetails);
+            Log.d("LOCATION_SAVING", "Pin long and lat have been saved");
+
+            savePhotoToCloud(imageUri, markerID);
+            Log.d("PHOTO_SAVING", "Pin photo has been saved");
+
             LatLng latLng = new LatLng(latitude, longitude);
             String markerName = "New Marker Title";
+            // Call method to create new marker
         }
     }
 
+    // Method to handle generating the ID for the marker
+    private String generateID(){
+        String IDStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+        return IDStamp;
+    }
+
     // Method to handle saving to the DB
-    private void saveToFirebase(Double latitude, Double longitude, String username) {
+    private void saveToFirebase(Map pinDetails) {
         // Get pin timestamp
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("AEST"));
         Date date = new Date();
         String pinCreationTime = dateFormat.format(date);
+        pinDetails.put("CreationTime", pinCreationTime);
 
         // Setup hashmap to be saved
-        Map mLocations = new HashMap();
-        mLocations.put("CreationTime", pinCreationTime);
-        mLocations.put("Username", username);
         Map mCoordinate = new HashMap();
         mCoordinate.put("latitude", latitude);
         mCoordinate.put("longitude", longitude);
-        mLocations.put("location", mCoordinate);
-        dbRef.push().setValue(mLocations);
+        pinDetails.put("location", mCoordinate);
+        dbRef.push().setValue(pinDetails);
     }
 
     // Method to save photo to cloud storage
-    private void savePhotoToCloud(Uri uri) {
-        StorageReference storageRef = mStorageRef.child("PhotoScapePhotos/photo" + username + "jpg");
+    private void savePhotoToCloud(Uri uri, String markerID) {
+        StorageReference storageRef = mStorageRef.child("PhotoScapePhotos/photo" + markerID
+                + username + ".jpg");
         if (ActivityCompat.checkSelfPermission(getContext(),
                 android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
@@ -222,5 +283,31 @@ public class CreatePin extends Fragment {
                 }
             });
         }
+    }
+
+    // Getters and setters
+    public String getPinName(){
+        String pinName = nameInput.getText().toString();
+        return pinName;
+    }
+
+    public String getPinDescription() {
+        String pinDescription = descriptionInput.getText().toString();
+        return pinDescription;
+    }
+
+    public String getPinInstructions() {
+        String pinInstructions;
+        if(instructionsInput.getText().toString() != null){
+            pinInstructions = instructionsInput.getText().toString();
+        }else {
+            pinInstructions = "No Instructions provided";
+        }
+        return pinInstructions;
+    }
+
+    public String getPinBestPhotoTime() {
+        String pinBestPhotoTime = spinner.getSelectedItem().toString();
+        return pinBestPhotoTime;
     }
 }
