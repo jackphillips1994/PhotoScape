@@ -67,7 +67,7 @@ public class CreatePin extends Fragment {
     // Setup location details
     Double latitude;
     Double longitude;
-    String username;
+    String emailAddress;
 
     // Setup image details
     Uri imageUri;
@@ -160,9 +160,9 @@ public class CreatePin extends Fragment {
     private void unpackArguments() {
         latitude = this.getArguments().getDouble("LATITUDE");
         longitude = this.getArguments().getDouble("LONGITUDE");
-        username = this.getArguments().getString("USERNAME");
+        emailAddress = this.getArguments().getString("USERNAME");
         Log.d("TRANSFER_STATUS", "LATITUDE: " + latitude + " " + "LONGITUDE: " + longitude +
-                "USERNAME: " + username);
+                "USERNAME: " + emailAddress);
     }
 
     private void closeCurrentFragment(){
@@ -215,7 +215,7 @@ public class CreatePin extends Fragment {
         }
         // Gather all data needed to be saved to the DB, then call the save db method and save storage method
         Map pinDetails = getPinDetails();
-        pinDetails.put("Username", username);
+        pinDetails.put("EmailAddress", emailAddress);
 
         // Get uri from image view
         ImageView imageView = this.getView().findViewById(R.id.photoPreview);
@@ -223,7 +223,7 @@ public class CreatePin extends Fragment {
             Toast.makeText(getActivity(),"No photo has been selected", Toast.LENGTH_SHORT).show();
         } else{
             // Call method to generate an id for the marker(EG timestamp that will go across photos and marker details)
-            String markerID = generateID();
+            String markerID = generateID(emailAddress);
             pinDetails.put("ID",markerID);
 
             saveToFirebase(pinDetails);
@@ -232,15 +232,15 @@ public class CreatePin extends Fragment {
             savePhotoToCloud(imageUri, markerID);
             Log.d("PHOTO_SAVING", "Pin photo has been saved");
 
-            LatLng latLng = new LatLng(latitude, longitude);
-            String markerName = "New Marker Title";
-            // Call method to create new marker
+            String markerTitle = pinDetails.get("PinName").toString();
+            sendData("Save", markerID, markerTitle);
         }
     }
 
     // Method to handle generating the ID for the marker
-    private String generateID(){
+    private String generateID(String emailAddress){
         String IDStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+        IDStamp = IDStamp + emailAddress;
         return IDStamp;
     }
 
@@ -263,8 +263,7 @@ public class CreatePin extends Fragment {
 
     // Method to save photo to cloud storage
     private void savePhotoToCloud(Uri uri, String markerID) {
-        StorageReference storageRef = mStorageRef.child("PhotoScapePhotos/photo" + markerID
-                + username + ".jpg");
+        StorageReference storageRef = mStorageRef.child("PhotoScapePhotos/photo" + markerID + ".jpg");
         if (ActivityCompat.checkSelfPermission(getContext(),
                 android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
@@ -283,6 +282,26 @@ public class CreatePin extends Fragment {
                 }
             });
         }
+    }
+
+    // Method to send data through intent to the main activity
+    private void sendData(String result, String markerID, String markerTitle) {
+        // Setup intent
+        Intent intent = new Intent(getActivity().getBaseContext(), MapsActivity.class);
+
+        if(result == "Save"){
+            // Package data
+            intent.putExtra("SENDER_KEY", "CreatePin");
+            intent.putExtra("RESULT","Save");
+            intent.putExtra("MARKER_ID", markerID);
+            intent.putExtra("MARKER_TITLE", markerTitle);
+            intent.putExtra("LATITUDE", latitude);
+            intent.putExtra("LONGITUDE", longitude);
+        } else {
+            intent.putExtra("RESULT","Discard");
+        }
+        MapsActivity.isCreatePinFragmentWasDisplayed = true;
+        getActivity().startActivity(intent);
     }
 
     // Getters and setters

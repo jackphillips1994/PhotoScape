@@ -24,6 +24,7 @@ import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -34,7 +35,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
@@ -59,11 +63,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // Variables to handle the fragements
     public static Boolean isCreatePinFragmentDisplayed = false;
     public static Boolean isAccountPinFragmentDisplayed = false;
+    public static Boolean isCreatePinFragmentWasDisplayed = false;
 
     // Setting up Firebase login providers
     List<AuthUI.IdpConfig> providers = Arrays.asList(
             new AuthUI.IdpConfig.EmailBuilder().build(),
             new AuthUI.IdpConfig.GoogleBuilder().build());
+
+    // Marker options for the create pin marker once it has come back from the fragment
+    MarkerOptions createPinMarkerOptions = new MarkerOptions();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,8 +143,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return;
             }
             mMap.setMyLocationEnabled(true);
-        }
-        else{
+        } else {
             Log.d("LOCATION_STATUS", "Was unable to get permissions to get current location");
         }
 
@@ -144,18 +151,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onMapClick(LatLng latLng) {
                 // Check to see if fragment is open and if so close it
-                if(isCreatePinFragmentDisplayed){
+                if (isCreatePinFragmentDisplayed) {
                     closeCreatePinFragment();
-                }else if (!isAccountPinFragmentDisplayed) {
+                } else if (!isAccountPinFragmentDisplayed) {
                     // Call marker creation method
                     displayCreatePinFragment(latLng);
                     //setMapMarker(latLng, "New Marker Title");
-                }
-                else {
+                } else {
                     closeAccountFragment();
                 }
             }
         });
+        if(isCreatePinFragmentWasDisplayed == true){
+            mMap.addMarker(createPinMarkerOptions);
+            isCreatePinFragmentWasDisplayed = false;
+        }
     }
 
     // Authenticate the user by calling the Firebase intent
@@ -198,6 +208,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .signOut(this)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     public void onComplete(@NonNull Task<Void> task) {}});
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Check to see if the create pin fragment was displayed to make sure that this is only run
+        // on resume from the create pin fragment
+        Log.d("INFO_RECEIVED", isCreatePinFragmentWasDisplayed.toString());
+        if(isCreatePinFragmentWasDisplayed){
+            //DETERMINE WHO STARTED THIS ACTIVITY
+            final String sender=this.getIntent().getExtras().getString("SENDER_KEY");
+
+            //IF ITS THE FRAGMENT THEN RECEIVE DATA
+            if(sender != null)
+            {
+                this.receiveData();
+                Toast.makeText(this, "Received", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void receiveData() {
+        // TODO: Setup map location to be saved on pause and set the map location on resume
+
+        //RECEIVE DATA VIA INTENT
+        Intent intent = getIntent();
+        String result = intent.getStringExtra("RESULT");
+        Log.d("INFO_RECEIVED", result);
+        if(result.equals("Save")){
+            // Getting the info from the intent
+            String markerID = intent.getStringExtra("MARKER_ID");
+            String markerTitle = intent.getStringExtra("MARKER_TITLE");
+            Double markerLat = intent.getDoubleExtra("LATITUDE",0);
+            Double markerLong = intent.getDoubleExtra("LONGITUDE",0);
+            LatLng markerLocation = new LatLng(markerLat, markerLong);
+            Log.d("INFO_RECEIVED", "MarkerID: " + markerID + " MarkerTitle: " +
+            markerTitle + " markerLat: " + markerLat + " markerLong: " + markerLong);
+
+            // Creating the marker and setting the marker
+            createPinMarkerOptions.position(markerLocation);
+            Log.d("SETUP_MARKER", "Setting up marker");
+
+            // Setting the title for the marker
+            createPinMarkerOptions.title(markerTitle);
+        }
     }
 
    /* private void getDeviceLocationWithManager() {
@@ -267,14 +322,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
     }
 
+    // Method to handle creating all markers at the opening of the map
+    public void setupMultipleMapMarkers() {
+        // TODO:
+    }
+
     // Method to handle map marker creation
-    public void setMapMarker(LatLng latLng, String markerTitle){
+    public void setMapMarker(LatLng latLng, String markerTitle, String markerID){
         // Return value from fragment, if save pin then save pin if not discard pin
 
+        //TODO: Add the ability to add the markerID to the marker
         // Creating the marker and setting the marker
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
-        mMap.addMarker(markerOptions);
+        Log.d("SETUP_MARKER", "Setting up marker");
 
         // Setting the title for the marker
         markerOptions.title(markerTitle);
@@ -282,7 +343,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Clears the markers
         //mMap.clear();
 
-        // Moves the camera to the new position
+        // Creates marker and moves the camera to the new position
+        mMap.addMarker(markerOptions);
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM));
     }
 
