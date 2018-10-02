@@ -27,7 +27,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -60,6 +62,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public Criteria criteria;
     public String bestProvider;
 
+    // Variables to handle the saving of the map state
+    private static final String KEY_CAMERA_POSITION = "camera_position";
+    private static final String KEY_LOCATION = "location";
+    private Location previousCurrentLocation;
+    private CameraPosition previousCameraPosition;
+    private Location mLastKnownLocation;
+
     // Variables to handle the fragements
     public static Boolean isCreatePinFragmentDisplayed = false;
     public static Boolean isAccountPinFragmentDisplayed = false;
@@ -72,6 +81,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     // Marker options for the create pin marker once it has come back from the fragment
     MarkerOptions createPinMarkerOptions = new MarkerOptions();
+    String markerCreationID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +100,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        if(savedInstanceState != null){
+            previousCurrentLocation = savedInstanceState.getParcelable(KEY_LOCATION);
+            previousCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+        }
         // Setting up the mylocation
         getLocationPermission();
 
@@ -134,7 +148,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         if (mLocationPermissionsGranted) {
             Log.d("LOCATION_STATUS", "App has correct permissions to access devices current location");
-            getDeviceLocation();
+
+            if (previousCurrentLocation != null) {
+                moveCamera(new LatLng(previousCurrentLocation.getLatitude(), previousCurrentLocation.getLongitude()),
+                        DEFAULT_ZOOM);
+            } else {
+                getDeviceLocation();
+            }
             //getDeviceLocationWithManager();
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -163,9 +183,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
         if(isCreatePinFragmentWasDisplayed == true){
-            mMap.addMarker(createPinMarkerOptions);
+            Marker mMarker = mMap.addMarker(createPinMarkerOptions);
+            mMarker.setTag(markerCreationID);
             isCreatePinFragmentWasDisplayed = false;
         }
+
+        // Setup marker on click listener
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                displayReviewPinFragment(marker.getTag().toString());
+                return false;
+            }
+        });
     }
 
     // Authenticate the user by calling the Firebase intent
@@ -221,11 +251,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             final String sender=this.getIntent().getExtras().getString("SENDER_KEY");
 
             //IF ITS THE FRAGMENT THEN RECEIVE DATA
-            if(sender != null)
-            {
+            if(sender != null) {
                 this.receiveData();
                 Toast.makeText(this, "Received", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if (mMap != null) {
+            outState.putParcelable(KEY_CAMERA_POSITION, mMap.getCameraPosition());
+            outState.putParcelable(KEY_LOCATION, mLastKnownLocation);
+            super.onSaveInstanceState(outState);
         }
     }
 
@@ -252,6 +290,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             // Setting the title for the marker
             createPinMarkerOptions.title(markerTitle);
+            markerCreationID = markerID;
         }
     }
 
@@ -434,6 +473,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             fragmentTransaction.remove(account).commit();
             isAccountPinFragmentDisplayed = false;
         }
+    }
+
+    // Method to display the review pin fragment
+    public void displayReviewPinFragment(String markerID) {
+        Log.d("MARKER_CLICK", "Marker: " + markerID);
+        Bundle bundle = new Bundle();
+
+        bundle.putString("MARKER_ID", markerID);
+
+        // Create fragment and pass data through
+        ReviewPin reviewPin = new ReviewPin();
+        reviewPin.setArguments(bundle);
+
+        // Get the FragementManager and start a transaction
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        // Add the SimpleFragment
+        fragmentTransaction.add(R.id.reviewpin_fragment,reviewPin).addToBackStack(null).commit();
     }
 
     // Method to setup places search

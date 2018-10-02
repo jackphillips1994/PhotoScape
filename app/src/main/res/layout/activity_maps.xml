@@ -52,4 +52,14 @@
         app:itemTextColor="#ffffff"
         app:menu="@menu/bottom_navigation_main" />
 
+    <FrameLayout
+        android:id="@+id/reviewpin_fragment"
+        android:name="com.photoscape.photoscape.ReviewPin"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:layout="@layout/fragment_review_pin">
+
+    </FrameLayout>
+
 </RelativeLayout>

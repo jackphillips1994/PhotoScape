@@ -4,73 +4,97 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:backgroundTint="@color/colorPrimary"
     tools:context=".ReviewPin">
 
     <!-- TODO: Update blank fragment layout -->
 
-    <android.support.constraint.ConstraintLayout
-        android:id="@+id/scrollView2"
-        android:layout_width="match_parent"
-        android:layout_height="740dp">
+    <ScrollView
+        android:layout_width="340dp"
+        android:layout_height="508dp"
+        android:backgroundTint="@color/colorPrimary">
 
-        <LinearLayout
+        <android.support.constraint.ConstraintLayout
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:backgroundTint="@color/colorPrimary">
 
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="343dp"
-            android:layout_height="228dp"
-            tools:layout_editor_absoluteX="0dp"
-            tools:layout_editor_absoluteY="1dp"
-            tools:src="@tools:sample/backgrounds/scenic[11]" />
+            <ImageView
+                android:id="@+id/photoPreview"
+                android:layout_width="350dp"
+                android:layout_height="184dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.4"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/linearLayout"
+                tools:src="@tools:sample/backgrounds/scenic[11]" />
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="134dp"
-            android:layout_height="20dp"
-            android:text="PinName"
-            android:textColor="@color/common_google_signin_btn_text_dark_default"
-            tools:layout_editor_absoluteX="16dp"
-            tools:layout_editor_absoluteY="202dp" />
+            <TextView
+                android:id="@+id/bestTimeForPhotoTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="64dp"
+                android:text="Best Time for Photo: "
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/descriptionTextView" />
 
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="210dp"
-            android:layout_height="111dp"
-            android:text="Description"
-            tools:layout_editor_absoluteX="65dp"
-            tools:layout_editor_absoluteY="258dp" />
+            <TextView
+                android:id="@+id/bestTimeForPhotoAnswerTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="Sunset"
+                app:layout_constraintBottom_toTopOf="@+id/instructionsTextView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.691"
+                app:layout_constraintStart_toEndOf="@+id/bestTimeForPhotoTextView"
+                app:layout_constraintTop_toBottomOf="@+id/descriptionTextView"
+                app:layout_constraintVertical_bias="0.546" />
 
-        <TextView
-            android:id="@+id/textView3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Best Time for Photo: "
-            tools:layout_editor_absoluteX="16dp"
-            tools:layout_editor_absoluteY="428dp" />
+            <TextView
+                android:id="@+id/descriptionTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="Description"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.118"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/photoPreview" />
 
-        <TextView
-            android:id="@+id/textView4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sunset"
-            tools:layout_editor_absoluteX="215dp"
-            tools:layout_editor_absoluteY="428dp" />
+            <TextView
+                android:id="@+id/instructionsTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="16dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="52dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="Instructions"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.104"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/bestTimeForPhotoTextView"
+                app:layout_constraintVertical_bias="1.0" />
 
-        <TextView
-            android:id="@+id/textView5"
-            android:layout_width="208dp"
-            android:layout_height="83dp"
-            android:text="Instructions"
-            tools:layout_editor_absoluteX="67dp"
-            tools:layout_editor_absoluteY="489dp" />
-    </android.support.constraint.ConstraintLayout>
+            <TextView
+                android:id="@+id/pinNameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PinName"
+                android:textColor="@color/common_google_signin_btn_text_dark_default"
+                app:layout_constraintBottom_toBottomOf="@+id/photoPreview"
+                app:layout_constraintEnd_toEndOf="@+id/photoPreview"
+                app:layout_constraintHorizontal_bias="0.139"
+                app:layout_constraintStart_toStartOf="@+id/photoPreview"
+                app:layout_constraintTop_toTopOf="@+id/photoPreview"
+                app:layout_constraintVertical_bias="0.921" />
+        </android.support.constraint.ConstraintLayout>
+    </ScrollView>
 
 </FrameLayout>

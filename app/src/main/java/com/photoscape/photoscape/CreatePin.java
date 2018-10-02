@@ -239,8 +239,7 @@ public class CreatePin extends Fragment {
 
     // Method to handle generating the ID for the marker
     private String generateID(String emailAddress){
-        String IDStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-        IDStamp = IDStamp + emailAddress;
+        String IDStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         return IDStamp;
     }
 
@@ -258,6 +257,7 @@ public class CreatePin extends Fragment {
         mCoordinate.put("latitude", latitude);
         mCoordinate.put("longitude", longitude);
         pinDetails.put("location", mCoordinate);
+        dbRef = dbRef.child(pinDetails.get("ID").toString());
         dbRef.push().setValue(pinDetails);
     }
 
