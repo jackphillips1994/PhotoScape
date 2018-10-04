@@ -119,7 +119,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         switch (item.getTitle().toString()) {
                             case "My Pins":
                                 Log.d("NAV_BAR", "My Pins clicked");
-                                Intent intent = new Intent(MapsActivity.this, MyPinsActivity.class);
+                                FirebaseUser currentUser = authCheck.getCurrentUser();
+                                String emailAddress = currentUser.getEmail();
+                                Log.d("NAV_BAR", "Email: " + emailAddress);
+                                Intent intent = new Intent(getApplicationContext(), MyPinsActivity.class);
+                                intent.putExtra("EMAIL_ADDRESS", emailAddress);
                                 startActivity(intent);
                                 break;
                             case "Account":

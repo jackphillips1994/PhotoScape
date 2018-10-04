@@ -42,4 +42,8 @@
     
     <!-- Strings used for My Pins Activity -->
     <string name="my_pins">My Pins</string>
+
+    <!-- Strings used for bottom Nav Bar -->
+    <string name="nav_bar_menu2">Account</string>
+
 </resources>

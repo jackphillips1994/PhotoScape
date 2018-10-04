@@ -4,11 +4,13 @@
     <item
         android:id="@+id/action_my_pins"
         android:enabled="true"
-        android:title="My Pins"
+        android:icon="@drawable/ic_baseline_pin_drop_24px"
+        android:title="@string/my_pins"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_account"
         android:enabled="true"
-        android:title="Account"
+        android:icon="@drawable/ic_baseline_account_box_24px"
+        android:title="@string/nav_bar_menu2"
         app:showAsAction="ifRoom" />
 </menu>
