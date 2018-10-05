@@ -2,6 +2,7 @@ package com.photoscape.photoscape;
 
 
 import android.Manifest;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -35,6 +36,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 import java.security.Timestamp;
 import java.text.DateFormat;
@@ -43,6 +45,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
+
+import static com.firebase.ui.auth.AuthUI.getApplicationContext;
 
 
 /**
@@ -192,8 +196,41 @@ public class CreatePin extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST) {
             this.imageUri = data.getData();
-            ImageView imageView = this.getView().findViewById(R.id.photoPreview);
-            imageView.setImageURI(imageUri);
+            Uri uri  = data.getData();
+            File f = null;
+            int dataSize=0;
+            String scheme = uri.getScheme();
+            System.out.println("Scheme type " + scheme);
+            if(scheme.equals(ContentResolver.SCHEME_CONTENT))
+            {
+                try {
+                    InputStream fileInputStream = getActivity().getApplicationContext().getContentResolver().openInputStream(uri);
+                    dataSize = fileInputStream.available();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Log.d("IMAGE_TRANSFER_STATUS1", "Size: " + dataSize);
+
+            }
+            else if(scheme.equals(ContentResolver.SCHEME_FILE))
+            {
+                String path = uri.getPath();
+                try {
+                    f = new File(path);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Log.d("IMAGE_TRANSFER_STATUS2", "Size: " + f.length());
+            }
+
+            long maxImageSize = 5242880;
+            if(dataSize < maxImageSize){
+                ImageView imageView = this.getView().findViewById(R.id.photoPreview);
+                imageView.setImageURI(imageUri);
+            } else{
+                Toast.makeText(getActivity(), "Error: Image is too large",
+                        Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -306,13 +343,11 @@ public class CreatePin extends Fragment {
 
     // Getters and setters
     public String getPinName(){
-        String pinName = nameInput.getText().toString();
-        return pinName;
+        return nameInput.getText().toString();
     }
 
     public String getPinDescription() {
-        String pinDescription = descriptionInput.getText().toString();
-        return pinDescription;
+        return descriptionInput.getText().toString();
     }
 
     public String getPinInstructions() {
@@ -326,7 +361,6 @@ public class CreatePin extends Fragment {
     }
 
     public String getPinBestPhotoTime() {
-        String pinBestPhotoTime = spinner.getSelectedItem().toString();
-        return pinBestPhotoTime;
+        return spinner.getSelectedItem().toString();
     }
 }

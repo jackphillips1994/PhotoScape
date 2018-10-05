@@ -29,7 +29,7 @@
     <string name="best_photo_time_text_view">Best Time for Photo:</string>
     <string name="instructions_text_view">Instructions</string>
     <string name="save_pin_button">Save</string>
-    <string name="discard_button">Discord</string>
+    <string name="discard_button">Discard</string>
     <!-- Strings for spinners -->
     <string-array name="best_Photo_Time">
         <item>Sunrise</item>
@@ -45,5 +45,7 @@
 
     <!-- Strings used for bottom Nav Bar -->
     <string name="nav_bar_menu2">Account</string>
+
+    <string name="photo_preview">photoPreview</string>
 
 </resources>

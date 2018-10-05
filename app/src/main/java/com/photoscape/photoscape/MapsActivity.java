@@ -1,6 +1,7 @@
 package com.photoscape.photoscape;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
@@ -80,6 +81,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public static Boolean isCreatePinFragmentDisplayed = false;
     public static Boolean isAccountPinFragmentDisplayed = false;
     public static Boolean isCreatePinFragmentWasDisplayed = false;
+    public static Boolean isReviewPinFragmentDisplayed = false;
 
     // Setting up Firebase login providers
     List<AuthUI.IdpConfig> providers = Arrays.asList(
@@ -138,7 +140,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 break;
                             case "Account":
                                 Log.d("NAV_BAR", "Account clicked");
-                                displayAccountFragment();
+                                if(isAccountPinFragmentDisplayed){
+                                    closeAccountFragment();
+                                } else {
+                                    displayAccountFragment();
+                                }
                                 break;
                         }
                         return true;
@@ -167,7 +173,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 moveCamera(new LatLng(previousCurrentLocation.getLatitude(), previousCurrentLocation.getLongitude()),
                         DEFAULT_ZOOM);
             } else {
-                getDeviceLocation();
+
             }
             //getDeviceLocationWithManager();
 
@@ -187,12 +193,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Check to see if fragment is open and if so close it
                 if (isCreatePinFragmentDisplayed) {
                     closeCreatePinFragment();
-                } else if (!isAccountPinFragmentDisplayed) {
+                } else if (!isAccountPinFragmentDisplayed && !isReviewPinFragmentDisplayed && !isCreatePinFragmentDisplayed) {
                     // Call marker creation method
                     displayCreatePinFragment(latLng);
                     //setMapMarker(latLng, "New Marker Title");
                 } else {
                     closeAccountFragment();
+                    closeReviewPinFragment();
                 }
             }
         });
@@ -260,6 +267,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onResume() {
         super.onResume();
+        getDeviceLocation();
         // Check to see if the create pin fragment was displayed to make sure that this is only run
         // on resume from the create pin fragment
         Log.d("INFO_RECEIVED", isCreatePinFragmentWasDisplayed.toString());
@@ -285,8 +293,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void receiveData() {
-        // TODO: Setup map location to be saved on pause and set the map location on resume
-
         //RECEIVE DATA VIA INTENT
         Intent intent = getIntent();
         String result = intent.getStringExtra("RESULT");
@@ -311,7 +317,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-   /* private void getDeviceLocationWithManager() {
+  /** private void getDeviceLocationWithManager() {
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         criteria = new Criteria();
         bestProvider = String.valueOf(locationManager.getBestProvider(criteria, true));
@@ -322,8 +328,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // Request location update
             locationManager.requestLocationUpdates(bestProvider, 1000, 0, );
         }
-    }
-*/
+    } **/
+
 
     private void getDeviceLocation() {
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -551,6 +557,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Add the SimpleFragment
         fragmentTransaction.add(R.id.reviewpin_fragment,reviewPin).addToBackStack(null).commit();
+        isReviewPinFragmentDisplayed = true;
+    }
+
+    // Method to close the review pin fragment
+    public void closeReviewPinFragment() {
+        Log.d("FRAGEMENT_MANAGER", "Closing review pin fragment");
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        // Check to see if the fragment is already showing
+        ReviewPin reviewPin = (ReviewPin) fragmentManager
+                .findFragmentById(R.id.reviewpin_fragment);
+        if(reviewPin != null) {
+            Log.d("FRAGEMENT_MANAGER", "Calling closing review pin fragment");
+            // Commit and close the transaction to close the fragment
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.remove(reviewPin).commit();
+            isReviewPinFragmentDisplayed = false;
+        }
     }
 
     // Method to setup places search
@@ -570,6 +593,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onError(Status status) {
                 // TODO: Handle the error.
                 Log.d("PLACES_SEARCH", "An error occurred: " + status);
+                Toast.makeText(MapsActivity.this, "Error: Unable to change location",
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
