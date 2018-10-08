@@ -16,6 +16,9 @@ import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.Arrays;
+import java.util.List;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -24,6 +27,12 @@ public class Account extends Fragment {
 
     private Button signOutButton;
     private TextView emailAddressDisplay;
+    private static int REQUEST_CODE = 102;
+
+    // Setting up Firebase login providers
+    List<AuthUI.IdpConfig> providers = Arrays.asList(
+            new AuthUI.IdpConfig.EmailBuilder().build(),
+            new AuthUI.IdpConfig.GoogleBuilder().build());
 
     public Account() {
         // Required empty public constructor
@@ -56,6 +65,10 @@ public class Account extends Fragment {
                 .signOut(getActivity())
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     public void onComplete(@NonNull Task<Void> task) {}});
+        startActivityForResult(
+                AuthUI.getInstance().createSignInIntentBuilder()
+                        .setAvailableProviders(providers)
+                        .build(),REQUEST_CODE);
     }
 
     private void closeCurrentFragment(){

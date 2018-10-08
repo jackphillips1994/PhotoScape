@@ -237,7 +237,13 @@ public class CreatePin extends Fragment {
     // Method to handle gather all the pin details from the inputted data
     private Map getPinDetails() {
         Map pinDetails = new HashMap();
-        pinDetails.put("PinName", getPinName());
+        if(getPinName() == null){
+            Toast.makeText(getActivity(), "Error: Please fill in Name",
+                    Toast.LENGTH_SHORT).show();
+            closeCurrentFragment();
+        } else {
+            pinDetails.put("PinName", getPinName());
+        }
         pinDetails.put("PinDescription",getPinDescription());
         pinDetails.put("PinInstructions",getPinInstructions());
         pinDetails.put("PinBestPhotoTime",getPinBestPhotoTime());
@@ -301,6 +307,7 @@ public class CreatePin extends Fragment {
     // Method to save photo to cloud storage
     private void savePhotoToCloud(Uri uri, String markerID) {
         StorageReference storageRef = mStorageRef.child("PhotoScapePhotos/photo" + markerID + ".jpg");
+        String path = null;
         if (ActivityCompat.checkSelfPermission(getContext(),
                 android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
@@ -308,16 +315,22 @@ public class CreatePin extends Fragment {
             Log.e("DB", "PERMISSION REQUESTED");
         } else {
             Log.e("DB", "PERMISSION GRANTED");
-            String path = ImageFilePath.getPath(getActivity().getApplicationContext(), uri);
-            Log.d("TRANSFER_STATUS", "Path: " + path);
-            Uri file = Uri.fromFile(new File(path));
-            UploadTask uploadTask = storageRef.putFile(file);
-            uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                    Log.d("TRANSFER_STATUS", "Upload Complete");
-                }
-            });
+            if(uri == null){
+                Toast.makeText(getActivity(), "Error: Please add an image",
+                        Toast.LENGTH_SHORT).show();
+                closeCurrentFragment();
+            } else {
+                path = ImageFilePath.getPath(getActivity().getApplicationContext(), uri);
+                Log.d("TRANSFER_STATUS", "Path: " + path);
+                Uri file = Uri.fromFile(new File(path));
+                UploadTask uploadTask = storageRef.putFile(file);
+                uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                        Log.d("TRANSFER_STATUS", "Upload Complete");
+                    }
+                });
+            }
         }
     }
 

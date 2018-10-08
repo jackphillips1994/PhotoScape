@@ -18,6 +18,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -132,7 +133,7 @@ public class ReviewPin extends Fragment {
         Log.w("PHOTO_PREVIEW_DETAILS", "PhotoScapePhotos/photo" + markerID + ".jpg");
         // Create a reference from an HTTPS URL
         // Note that in the URL, characters are URL escaped!
-        StorageReference pathRef = mStorageRef.child("PhotoScapePhotos/photo20181002185343.jpg");
+        StorageReference pathRef = mStorageRef.child("PhotoScapePhotos/photo" + markerID + ".jpg");
 
         final long ONE_MEGABYTE = 1024 * 1024;
         pathRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
@@ -141,9 +142,11 @@ public class ReviewPin extends Fragment {
                 // Data for "images/island.jpg" is returns, use this as needed
                 Bitmap bm = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 DisplayMetrics dm = new DisplayMetrics();
-                ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE))
-                        .getDefaultDisplay().getMetrics(dm);
-
+                try {
+                    ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE))
+                            .getDefaultDisplay().getMetrics(dm);
+                } catch (SecurityException e) {
+                }
                 photoPreview.setMinimumHeight(dm.heightPixels);
                 photoPreview.setMinimumWidth(dm.widthPixels);
                 photoPreview.setImageBitmap(bm);
@@ -152,6 +155,7 @@ public class ReviewPin extends Fragment {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle any errors
+                Toast.makeText(getActivity(), "Unable to download image", Toast.LENGTH_SHORT).show();
             }
         });
     }

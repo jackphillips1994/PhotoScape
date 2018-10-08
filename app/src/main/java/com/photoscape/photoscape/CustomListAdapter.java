@@ -8,14 +8,16 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 public class CustomListAdapter extends ArrayAdapter {
     private final Activity context;
-    private final String[] itemname;
-    private final Integer[] imgid;
-    private final String[] description;
+    private final ArrayList<String> itemname;
+    private final ArrayList imgid;
+    private final ArrayList<String> description;
 
-    public CustomListAdapter(Activity context, String[] itemname, Integer[] imgid,
-                             String[] description) {
+    public CustomListAdapter(Activity context, ArrayList<String> itemname, ArrayList imgid,
+                             ArrayList<String> description) {
         super(context, R.layout.pin_list, itemname);
 
         this.context = context;
@@ -32,9 +34,9 @@ public class CustomListAdapter extends ArrayAdapter {
         ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
         TextView extratxt = (TextView) rowView.findViewById(R.id.textView1);
 
-        txtTitle.setText(itemname[position]);
+        txtTitle.setText(itemname.get(position));
         //imageView.setImageResource(imgid[position]);
-        extratxt.setText("Description " + description[position]);
+        extratxt.setText("Description " + description.get(position));
 
         return rowView;
 

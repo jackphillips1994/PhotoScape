@@ -37,6 +37,11 @@ public class MyPinsActivity extends Activity {
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private StorageReference mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://photoscape-c88b6.appspot.com/PhotoScapePhotos");
 
+    // Setup storage arraylists
+    final ArrayList<String> pinNames = new ArrayList<String>();
+    final ArrayList<String> descriptions = new ArrayList<String>();
+    final ArrayList<Integer> imgNames = new ArrayList<Integer>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,43 +51,37 @@ public class MyPinsActivity extends Activity {
         Intent intent = getIntent();
         String emailAddress = intent.getStringExtra("EMAIL_ADDRESS");
         Log.d("EMAIL_CHECK", "onCreate: " + emailAddress);
-        Map<String, String[]> pinDetails = getPinMarkerData(emailAddress);
-        String[] pinList = pinDetails.get("PinName");
-        Integer[] imgNames = {1,2};
-        String[] description = pinDetails.get("Descriptions");
+        //Map<String, String[]> pinDetails = getPinMarkerData(emailAddress);
+        getPinMarkerData(emailAddress);
 
-        Log.d("FINAL_ARRAY_CHECK", "onCreate: " + pinList);
+        imgNames.add(1);
+        //String[] description = markers.get("Descriptions");
+        Log.d("FINAL_ARRAY_CHECK", "onCreate: " + pinNames);
 
-        CustomListAdapter adapter = new CustomListAdapter(this, pinList, imgNames, description);
+        CustomListAdapter adapter = new CustomListAdapter(this, pinNames, imgNames, descriptions);
         list = (ListView) findViewById(R.id.list);
         list.setAdapter(adapter);
     }
 
 
-    private Map<String, String[]> getPinMarkerData(String emailAddress) {
-        // Setup storage arraylists
-        final ArrayList<String> pinNames = new ArrayList<String>();
-        final ArrayList<String> descriptions = new ArrayList<String>();
-        final Map<String, String[]>  markers = new HashMap<String, String[]>();
-
+    private void getPinMarkerData(String emailAddress) {
         DatabaseReference dbRef = database.getReference("PhotoScape/");
         Log.d("DB_DETAILS", "Database reference: " + dbRef.toString());
         Query memberIDQuery = dbRef.orderByChild("EmailAddress").equalTo(emailAddress);
         Log.d("DB_DETAILS", "Database has been accessed with email: " + emailAddress);
         Log.d("DB_DETAILS", "Database reference: " + memberIDQuery.toString());
-        memberIDQuery.addValueEventListener(new ValueEventListener() {
+        dbRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
-                String value = dataSnapshot.getValue(String.class);
-                Log.d("MARKER_DETAILS", "Value is: " + value);
+                //String value = dataSnapshot.getValue(String.class);
+                //Log.d("MARKER_DETAILS", "Value is: " + value);
                 for (DataSnapshot markerDetailHashName : dataSnapshot.getChildren()){
                     Log.d("MARKER_DETAILS", "Value is: " + markerDetailHashName.getKey());
-                    for (DataSnapshot markerDetailIDName : markerDetailHashName.getChildren()){
-                        Log.d("MARKER_DETAILS", "Value is: " + markerDetailIDName.getKey());
-                        for ( DataSnapshot markerDetail : markerDetailIDName.getChildren()) {
-                            Log.d("MARKER_DETAILS", "Value is: " + markerDetail.getKey());
+                    for (DataSnapshot markerDetails : markerDetailHashName.getChildren()){
+                        Log.d("MARKER_DETAILS", "Value is: " + markerDetails.getKey());
+                        for( DataSnapshot markerDetail : markerDetails.getChildren()){
                             switch (markerDetail.getKey()) {
                                 case "PinDescription":
                                     if(markerDetail.getValue() == null){
@@ -101,23 +100,6 @@ public class MyPinsActivity extends Activity {
                         }
                     }
                 }
-
-                String pinNamesArray[] = new String[pinNames.size()];
-                for(int j = 0; j<pinNames.size(); j++){
-                    Log.d("ARRAY_CHECK", "onCreate: " + pinNames.get(j));
-                    pinNamesArray[j] = pinNames.get(j);
-                }
-
-                String descriptionsArray[] = new String[descriptions.size()];
-                for(int j = 0; j < descriptions.size(); j++){
-                    Log.d("ARRAY_CHECK", "onCreate: " + descriptions.get(j));
-                    pinNamesArray[j] = descriptions.get(j);
-                }
-
-                Log.d("ARRAY_CHECK", "onCreate: " + pinNamesArray[0]);
-                Log.d("ARRAY_CHECK", "onCreate: " + descriptionsArray[0]);
-                markers.put("PinName", pinNamesArray);
-                markers.put("Descriptions", descriptionsArray);
             }
 
             @Override
@@ -126,7 +108,7 @@ public class MyPinsActivity extends Activity {
                 Log.w("MARKER_DETAILS", "Failed to read value.", error.toException());
             }
         });
-        return markers;
+       // return arrays;
     }
 
   /**  private void downloadPhoto(String markerID) {

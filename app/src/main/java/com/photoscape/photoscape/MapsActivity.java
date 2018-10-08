@@ -220,6 +220,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Download and display map markers
         downloadMarkerDetails();
+        isReviewPinFragmentDisplayed = false;
     }
 
     // Authenticate the user by calling the Firebase intent
@@ -399,15 +400,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 for (DataSnapshot markerDetailHashName : dataSnapshot.getChildren()){
                     for (DataSnapshot markerDetailIDName : markerDetailHashName.getChildren()){
                         for ( DataSnapshot markerDetail : markerDetailIDName.getChildren()) {
-                            Log.d("PRE_MARKER_DETAILS", "Value is: " + markerDetail.getKey());
+                            Log.i("PRE_MARKER_DETAILS", "Value is: " + markerDetail.getKey());
                             if(markerDetail.getKey().equals("location")){
                                 for ( DataSnapshot locationDetails : markerDetail.getChildren()){
                                     if(locationDetails.getKey().equals("latitude")){
                                         latitude = locationDetails.getValue().toString();
-                                        Log.d("PRE_MARKER_DETAILS", "Latitude: " + latitude);
+                                        Log.i("PRE_MARKER_DETAILS", "Latitude: " + latitude);
                                     } else if ( locationDetails.getKey().equals("longitude")){
                                         longitude = locationDetails.getValue().toString();
-                                        Log.d("PRE_MARKER_DETAILS", "longitude: " + longitude);
+                                        Log.i("PRE_MARKER_DETAILS", "longitude: " + longitude);
                                     }
                                 }
                             }
